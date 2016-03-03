@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tower of Hanoi</title>
+    <link rel="stylesheet" href="./css/Hanoi.css">
+</head>
+
+<body>
+    <h1 id="title">Tower of Hanoi</h1>
+    <ul class="bar clearfix">
+        <li id="new-game">New game</li>
+        <li id="seting">Setting</li>
+        <li id="help">Help</li>
+        <div id="steps">Steps: <span>0</span>
+        </div>
+    </ul>
+    <div class="content">
+        <div class="container clearfix">
+            <ul class="stack stack-left">
+                <div class="rob"></div>
+            </ul>
+            <ul class="stack stack-middle">
+                <div class="rob"></div>
+            </ul>
+            <ul class="stack stack-right">
+                <div class="rob"></div>
+            </ul>
+            <div class="base"></div>
+        </div>
+        <div class="content-wraper result-content">
+            <p>
+            </p>
+            <div class="button-wraper">
+                <button class="new-game-btn">Play again</button>
+            </div>
+        </div>
+        <div class="content-wraper choose-content">
+        	<h4>Choose the number of disks:</h4>
+        	<br>
+            <ul class="disk-choose"></ul>
+            <br>
+            <hr>
+            <h4>Choose the initial stack:</h4>
+            <br>
+            <ul class="stack-choose"></ul>
+            <div class="button-wraper">
+                <button class="set-game-btn">Set and restart</button>
+                <button class="new-or-back-btn"></button>
+            </div>
+        </div>
+        <div class="content-wraper help-content">
+            <p>
+                Put all the disks from the initial stack to one of the other two stacks, obeying the following rules:
+                <br>
+                <br> <span>1. Only one disk can be moved at a time.</span>
+                <br> <span>2. A disk can only be moved if it is the uppermost disk on a stack.</span>
+                <br> <span>3. No disk may be placed on top of a smaller disk. If you disobey this rule, you will lose.</span>
+                <br>
+                <br>
+                <a href="https://en.wikipedia.org/wiki/Tower_of_Hanoi">Know more about Tower of Hanoi &gt;&gt;&gt;</a>
+            </p>
+            <div class="button-wraper">
+                <button class="setting-btn">Setting</button>
+                <button class="new-or-back-btn1"></button>
+            </div>
+        </div>
+        <div class="hover"></div>
+    </div>
+    <div class="footer">
+    	Developed by <a href="https://github.com/levonlin">Levon</a>
+    </div>
+    <script src="./js/miniQuery.js"></script>
+    <script src="./js/Hanoi.js"></script>
+    <script src="./js/game.js"></script>
+</body>
+
+</html>

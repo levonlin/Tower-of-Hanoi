@@ -1,0 +1,173 @@
+* {
+	margin: 0;
+ 	padding:0;
+ }
+/*禁止用户选择文字*/
+.noTextSelect {
+	-moz-user-select: none; /*火狐*/
+	-webkit-user-select: none; /*webkit浏览器*/
+	-ms-user-select: none; /*IE10*/
+	-khtml-user-select: none; /*早期浏览器*/
+	user-select: none;
+}
+ .clearfix:after {
+	clear: both;
+    display: block;
+    visibility: hidden;
+    height: 0;
+    line-height: 0;
+    content: '';
+}
+
+#title {
+	text-align: center;
+	font-size: 40px;
+}
+
+.bar {
+	width: 900px;
+	margin: 10px auto 0;
+	font-size: 25px;
+	font-weight: bold;
+	list-style: none;
+}
+.bar li {
+	float: left;
+	border: solid #000;
+	border-width: 5px 1px 0;
+	padding: 3px 5px;
+	margin-right: 5px; 
+	color: #a00;
+}
+.bar li:hover {
+	cursor: pointer;
+}
+#help a {
+	text-decoration: none;
+	color: #a00;
+}
+#steps {
+	float: right;
+	margin-right: 5px; 
+	color: #0a0;
+}
+
+.content {
+	position: relative;
+	border: solid #000 1px;
+	padding: 50px 0;
+	margin: 0 auto;
+	width: 900px;
+	height: 300px;
+}
+
+.container {
+	/*作为容器都需要相对定位*/
+	position: relative;
+	list-style: none;
+}
+.stack {
+	position: relative;
+	width: 300px;
+	list-style: none;
+}
+.stack-left {
+	float: left;
+}
+.stack-middle {
+	float: left;
+	/*因是相对定位，需将元素拉回自身的50%+左边元素宽度*/
+	/*margin-left: -75px;*/
+}
+.stack-right {
+	float: left;
+}
+.rob {
+	border: solid #000 1px;
+	width: 20px;
+	height: 300px;
+	margin: 0 auto;
+	border-radius: 35% 35% 0 0;
+	background-color: #ee0;
+}
+.disk {
+	position: absolute;
+	left: 50%;
+	text-align: center;
+	border: solid #000 2px;
+	border-radius: 30%;
+	height: 20px;
+	background-color: #ee0;
+}
+.disk:hover {
+	cursor: move;
+}
+.disk.active {
+	border: 2px solid #333;
+    opacity: 0.5;
+}
+.base {
+	position: absolute;
+	top: 301px;
+	border: solid #000 1px;
+	width: 898px;
+	height: 20px;
+	background-color: #ee0;
+}
+
+.content-wraper {
+	display: none;
+	position: absolute;
+	top: 0;
+	z-index: 2;
+	box-sizing: border-box;
+	width: 100%;
+	padding: 20px 50px;
+	background-color: #fff;
+}
+.button-wraper {
+	margin-top: 20px;
+	text-align: center;
+}
+.button-wraper button {
+	padding: 5px 20px;
+	font-weight: bold;
+	color: #a00;
+}
+
+.result-content p {
+	text-align: center;
+	font-size: 30px;
+	font-weight: bold;
+}
+
+.choose-content label{
+	margin-right: 20px;
+}
+
+.help-content p {
+	font-weight: bold;
+}
+.help-content p a {
+	text-decoration: none;
+	color: #00a;
+}
+
+.hover {
+	position: absolute;
+	top: 0;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	background: #000;
+	opacity: 0.6;
+}
+
+.footer {
+	font-weight: bold;
+	text-align: center;
+}
+.footer a {
+	text-decoration: none;
+	color: #00a;
+}
