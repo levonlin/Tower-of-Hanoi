@@ -93,6 +93,7 @@
 .disk {
 	position: absolute;
 	left: 50%;
+	z-index: 1;
 	text-align: center;
 	border: solid #000 2px;
 	border-radius: 30%;
