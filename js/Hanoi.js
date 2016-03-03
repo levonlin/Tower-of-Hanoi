@@ -11,10 +11,8 @@ function clearDisk(stack) {
 
 function setDiskWidth(stack) {
     var disk = stack.children;
-    // !!耦合过大
     for (var i = disk.length-1; i > 0; i--) {
         var width = 50 + i * 10;
-        // 设置style的属性必须严格匹配为带单位的字符串
         disk[i].style.width = width + 'px'; 
     }
 }
@@ -33,8 +31,8 @@ function initDisk(stack) {
     clearDisk($('.stack-right'))
     for (var i = 1; i <= diskNum; i++) {
         var newDisk = document.createElement('li');
-        newDisk.className = 'disk';
-        newDisk.innerHTML = i;
+        addClass(newDisk, 'disk');
+        setInnerText(newDisk, i);
         stack.appendChild(newDisk);
     }
     setDiskWidth(stack);
@@ -43,15 +41,15 @@ function initDisk(stack) {
 
 function initSteps() {
     steps = 0;
-    $('#steps span').innerHTML = 0;
+    setInnerText($('#steps span'), 0);
 }
 
 
 
 function check(disk, stack) {
-    $('#steps span').innerHTML = ++steps;
+    setInnerText($('#steps span'), ++steps);
     // 柱子上盘数大于一且存在大压小则输了
-    if (stack.children[2] && disk.innerHTML > stack.children[2].innerHTML) {
+    if (stack.children[2] && getInnerText(disk) > getInnerText(stack.children[2])) {
         lose();
     }
     // 没有大压小且全部盘移动到另外柱子则赢
@@ -61,7 +59,7 @@ function check(disk, stack) {
 }
 
 function putDisk(disk, stack, originStack) {
-    stack.insertBefore(disk, stack.children[1]);
+    stack.insertBefore(disk, stack.children[1] || null);
     disk.style.left = 50 + '%';
     disk.style.top = '';
     setDiskPosition(stack);
@@ -86,101 +84,179 @@ function isInContainer(x, y, Container) {
     return x > xMin && x < xMax && y > yMin && y < yMax; 
 }
 
-function drag(target, ev) {
-    // 记录鼠标点在盘内位置
-    var mouseDownX = ev.clientX;
-    var mouseDownY = ev.clientY;
-    //console.log('mouseDownX'+mouseDownX);
+// 自定义事件
+function EventTarget() {
+    this.handlers = {};
+}
 
-    // 当前盘的初始位置
-    var diskInitLeft = target.offsetLeft;
-    var diskInitTop = target.offsetTop;
-    //console.log('diskInitLeft'+diskInitLeft);
-    //console.log('diskInitTop'+diskInitTop);
+EventTarget.prototype = {
+    constructor: EventTarget,
+    addHandler: function(type, handler) {
+        if (typeof this.handlers[type] == 'undefined') {
+            this.handlers[type] = [];
+        }
+        this.handlers[type].push(handler);
+    },
 
-    // 当前盘所在区域的位置
-    var originStack = target.parentNode;
-    var originStackLeft = originStack.offsetLeft;
-    var originStackTop = originStack.offsetTop;
-    //console.log('originStackLeft' + originStackLeft);
+    fire: function(event) {
+        if (!event.target) {
+            event.target = this;
+        }
+        if (this.handlers[event.type] instanceof Array) {
+            var handlers = this.handlers[event.type];
+            for (var i = 0, len = handlers.length; i < len; i++) {
+                handlers[i](event);
+            }
+        }
+    },
 
-    // 只能最上面的盘移动
-    if (target !== originStack.children[1]) {
-        console.log('unable to move!');
-        return;
+    removeHandler: function(type, handler) {
+        if (this.handlers[type] instanceof Array) {
+            var handlers = this.handlers[type];
+            for (var i = 0, len = handlers.length; i < len; i++) {
+                if (handlers[i] === handler) {
+                    break;
+                }
+            }
+            handlers.splice(i, 1);
+        }
+    }
+};
+
+// 拖动效果的单例对象，全局绑定，封装拖动，只留接口
+var DragDrop = function () {
+    var dragdrop = new EventTarget(),
+        dragTarget = null,
+        canMove = true,
+        diffX = 0,
+        diffY = 0;
+
+    function handleEvent (event) {
+        var event = getEvent(event);
+        var target = getTarget(event);
+
+        switch(event.type) {
+            case 'mousedown' :
+                if (target.className.indexOf('draggable') > -1) {
+                    dragTarget = target;
+                    diffX = event.clientX - dragTarget.offsetLeft;
+                    diffY = event.clientY - dragTarget.offsetTop;
+                    dragdrop.fire({
+                        type: 'dragstart',
+                        target: dragTarget,
+                        x: event.clientX,
+                        y: event.clientY,
+                    });
+                }
+                break;
+            case 'mousemove' :
+                if (dragTarget !== null) {
+                    dragdrop.fire({
+                        type: 'drag',
+                        target: dragTarget,
+                        x: event.clientX,
+                        y: event.clientY
+                    });
+                    if (canMove) {
+                        dragTarget.style.left = (event.clientX - diffX) + 'px';
+                        dragTarget.style.top = (event.clientY - diffY) + 'px';
+                    }
+                }
+                break;
+            case 'mouseup' :
+                    // 因拖放结束也需要事件处理程序，所以需加对象存在性判断以避免空对象报错
+                    if (dragTarget !== null) {
+                        dragdrop.fire({
+                            type: 'dragend',
+                            target: dragTarget,
+                            x: event.clientX,
+                            y: event.clientY
+                        });
+                        dragTarget = null;
+                    }
+                break;
+        }
+    };
+
+    dragdrop.enable = function () {
+                $.on(document, 'mousedown', handleEvent);
+                $.on(document, 'mousemove', handleEvent);
+                $.on(document, 'mouseup', handleEvent);
+            };
+
+    dragdrop.disable = function () {
+                $.un(document, 'mousedown', handleEvent);
+                $.un(document, 'mousemove', handleEvent);
+                $.un(document, 'mouseup', handleEvent);
+            };
+
+    // 增加暂停拖动效果的接口，防止出界
+    dragdrop.pause = function () {
+        canMove = false;
     }
 
-    // 点击时防止就脱离
-    var isFree = false;
+    dragdrop.move = function () {
+        canMove = true;
+    }
+
+    return dragdrop;
+}();
+
+function judgeDraggable(event) {
+    var event = getEvent(event);
+    var target = getTarget(event);
+    var originStack = target.parentNode;
+    if (target === originStack.children[1]) {
+        addClass(target, 'draggable');
+        console.log('can move!');
+    } else {
+        removeClass(target, 'draggable');
+        console.log('can not move!');
+    }
+}
+
+initDisk($('.stack-left'));
+$.delegate($('.container'), 'li', 'mousedown', judgeDraggable);
+
+DragDrop.enable();
+DragDrop.addHandler('dragstart', function(event) {
+    var target = event.target;
     addClass(target, "active");
+});
+DragDrop.addHandler('drag', function(event) {
+    var target = event.target;
+    if (target.style.marginLeft !== '0px') {
+        target.style.marginLeft = 0 +'px';
+    }
 
-    function onMouseMove(e) {
-        var ev = e || window.event;
+    // 出界则暂停拖动并提示禁止
+    if (isOutOfContainer(event.x, event.y, $('.container'))) {
+        DragDrop.pause();
+        console.log('out');
+    } else {
+        DragDrop.move();
+    }
+});
+DragDrop.addHandler('dragend', function(event) {
+        var target = event.target;
+        var originStack = target.parentNode;
+        removeClass(target, "active");
 
-        // 记录移动时鼠标位置
-        var mouseMoveX = ev.clientX;
-        var mouseMoveY = ev.clientY;
-        //console.log('mouseMoveX'+mouseMoveX);
-
-        // 移动时保证脱离
-        if (!isFree) {
-            originStack.removeChild(target);
-            $('.container').appendChild(target);
-            isFree = true;
-        }
-
-        // 不出界则可移动
-        if (!isOutOfContainer(mouseMoveX, mouseMoveY, $('.container'))) {
-            target.style.left = originStackLeft + diskInitLeft + (mouseMoveX - mouseDownX) + 'px';
-            target.style.top = originStackTop + diskInitTop + (mouseMoveY - mouseDownY) + 'px';
-            // 消除为了居中设置的margin影响
-            target.style.marginLeft = 0 +'px';
+        // 依照释放位置释放盘子
+        if (isInContainer(event.x, event.y, $('.stack-left'))) {
+            putDisk(target, $('.stack-left'));
             // 刷新原来的堆叠区
             setDiskPosition(originStack);
         }
-    }
-
-    function onMouseUp(e) {
-        var ev = e || window.event;
-
-        // 记录鼠标释放时位置
-        var mouseUpX = ev.clientX;
-        var mouseUpY = ev.clientY;
-        //console.log('mouseUpX'+mouseUpX);
-
-        removeClass(target, "active");
-
-        // 解除原来的移动和释放事件
-        $.un(document, 'mousemove', onMouseMove);
-        $.un(document, 'mouseup', onMouseUp);
-
-        // 释放时还原回脱离前
-        if (isFree) {
-            $('.container').removeChild(target);
-            isFree = false;
-        }
-
-        // 依照释放位置释放盘子
-        if (isInContainer(mouseUpX, mouseUpY, $('.stack-left'))) {
-            putDisk(target, $('.stack-left'), originStack);
-        }
-        else if (isInContainer(mouseUpX, mouseUpY, $('.stack-middle'))) {
-            putDisk(target, $('.stack-middle'), originStack);
+        else if (isInContainer(event.x, event.y, $('.stack-middle'))) {
+            putDisk(target, $('.stack-middle'));
+            setDiskPosition(originStack);
         } 
-        else if (isInContainer(mouseUpX, mouseUpY, $('.stack-right'))) {
-            putDisk(target, $('.stack-right'), originStack);
+        else if (isInContainer(event.x, event.y, $('.stack-right'))) {
+            putDisk(target, $('.stack-right'));
+            setDiskPosition(originStack);
         } 
         else {
-            putDisk(target, originStack, originStack);
+            putDisk(target, originStack);
         }
-    }
-
-    // mousedown中再绑定鼠标移动和释放事件
-    $.on(document, 'mousemove', onMouseMove);
-    $.on(document, 'mouseup', onMouseUp);
-}
-
-// 只要父元素不变事件代理使用一次就可保持下去，所以监听的子元素改变时无需再使用代理
-$.delegate($('.stack-left'), 'li', 'mousedown', drag);
-$.delegate($('.stack-middle'), 'li', 'mousedown', drag);
-$.delegate($('.stack-right'), 'li', 'mousedown', drag);
+});

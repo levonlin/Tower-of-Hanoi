@@ -99,10 +99,8 @@
 	height: 20px;
 	background-color: #ee0;
 }
-.disk:hover {
-	cursor: move;
-}
 .disk.active {
+	cursor: move;
 	border: 2px solid #333;
     opacity: 0.5;
 }
